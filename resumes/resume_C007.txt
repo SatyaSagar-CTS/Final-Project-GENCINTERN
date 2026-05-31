@@ -1,0 +1,6 @@
+CandidateID: C007
+Name: Amit Desai
+Experience: 6 years
+Skills: Python, Flask, SQL
+Education: B.Tech in Computer Science
+Summary: Experienced in software development and technical recruitment support.

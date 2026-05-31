@@ -1,0 +1,5 @@
+jobID,title,requiredSkills
+JD001,Software Engineer,C++:40,Java:30,SQL:20,Python:10
+JD002,Full Stack Developer,JavaScript:35,React:30,Node.js:25,HTML:10
+JD003,Data Scientist,Python:50,Machine Learning:30,SQL:20
+JD004,DevOps Engineer,AWS:30,Docker:25,Kubernetes:25,Linux:20

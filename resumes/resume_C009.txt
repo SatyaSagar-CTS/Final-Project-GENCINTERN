@@ -1,0 +1,6 @@
+CandidateID: C009
+Name: Manish Gupta
+Experience: 8 years
+Skills: C++, Linux, Embedded Systems
+Education: B.Tech in Computer Science
+Summary: Experienced in software development and technical recruitment support.

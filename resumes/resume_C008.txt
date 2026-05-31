@@ -1,0 +1,6 @@
+CandidateID: C008
+Name: Kavya Nair
+Experience: 3 years
+Skills: JavaScript, Angular, CSS
+Education: B.Tech in Computer Science
+Summary: Experienced in software development and technical recruitment support.

@@ -1,0 +1,6 @@
+CandidateID: C011
+Name: Ritika Agarwal
+Experience: 4 years
+Skills: Python, Pandas, Machine Learning
+Education: B.Tech in Computer Science
+Summary: Experienced in software development and technical recruitment support.

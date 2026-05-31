@@ -1,0 +1,6 @@
+CandidateID: C003
+Name: Suresh Reddy
+Experience: 7 years
+Skills: Python, Django, Machine Learning
+Education: B.Tech in Computer Science
+Summary: Experienced in software development and technical recruitment support.

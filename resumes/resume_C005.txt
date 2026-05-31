@@ -1,0 +1,6 @@
+CandidateID: C005
+Name: Deepak Patel
+Experience: 5 years
+Skills: AWS, Docker, Kubernetes
+Education: B.Tech in Computer Science
+Summary: Experienced in software development and technical recruitment support.

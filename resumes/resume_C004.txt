@@ -1,0 +1,6 @@
+CandidateID: C004
+Name: Anjali Menon
+Experience: 2 years
+Skills: HTML, CSS, Bootstrap
+Education: B.Tech in Computer Science
+Summary: Experienced in software development and technical recruitment support.

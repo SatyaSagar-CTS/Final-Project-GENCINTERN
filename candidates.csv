@@ -1,0 +1,21 @@
+candidateID,name,experienceYears,skills
+C001,Ramesh Kumar,2,C++,Java,Python
+C002,Priya Sharma,3,JavaScript,React,Node.js
+C003,Suresh Reddy,7,Python,Django,Machine Learning
+C004,Anjali Menon,2,HTML,CSS,Bootstrap
+C005,Deepak Patel,5,AWS,Docker,Kubernetes
+C006,Neha Singh,4,Java,Spring,SQL
+C007,Amit Desai,6,Python,Flask,SQL
+C008,Kavya Nair,3,JavaScript,Angular,CSS
+C009,Manish Gupta,8,C++,Linux,Embedded Systems
+C010,Pooja Joshi,5,React,Node.js,MongoDB
+C011,Ritika Agarwal,4,Python,Pandas,Machine Learning
+C012,Vikram Mehta,6,AWS,Terraform,CI/CD
+C013,Sneha Iyer,3,Java,Microservices,SQL
+C014,Rahul Jain,2,JavaScript,Vue.js,HTML
+C015,Sonal Verma,5,Python,SQL,Data Visualization
+C016,Arun Nandakumar,7,AWS,Docker,Python
+C017,Meera Choudhary,4,C++,Algorithms,Data Structures
+C018,Kiran Yadav,6,React,Redux,TypeScript
+C019,Varun Khanna,5,Java,Hibernate,SQL
+C020,Isha Rao,3,Python,Django,REST

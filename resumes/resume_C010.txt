@@ -1,0 +1,6 @@
+CandidateID: C010
+Name: Pooja Joshi
+Experience: 5 years
+Skills: React, Node.js, MongoDB
+Education: B.Tech in Computer Science
+Summary: Experienced in software development and technical recruitment support.
