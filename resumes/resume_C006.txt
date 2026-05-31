@@ -1,0 +1,6 @@
+CandidateID: C006
+Name: Neha Singh
+Experience: 4 years
+Skills: Java, Spring, SQL
+Education: B.Tech in Computer Science
+Summary: Experienced in software development and technical recruitment support.

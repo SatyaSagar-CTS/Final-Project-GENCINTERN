@@ -1,0 +1,6 @@
+CandidateID: C019
+Name: Varun Khanna
+Experience: 5 years
+Skills: Java, Hibernate, SQL
+Education: B.Tech in Computer Science
+Summary: Experienced in software development and technical recruitment support.

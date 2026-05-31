@@ -14,7 +14,7 @@ ScreeningManager::~ScreeningManager()
 
 void ScreeningManager::addCandidate(Candidate* candidate)
 {
-    if (candidate != nullptr) {
+    if (candidate != 0) {
         candidates.push_back(candidate);
     }
 }

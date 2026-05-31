@@ -1,0 +1,6 @@
+CandidateID: C017
+Name: Meera Choudhary
+Experience: 4 years
+Skills: C++, Algorithms, Data Structures
+Education: B.Tech in Computer Science
+Summary: Experienced in software development and technical recruitment support.

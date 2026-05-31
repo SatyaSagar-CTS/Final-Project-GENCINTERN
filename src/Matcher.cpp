@@ -4,6 +4,14 @@
 using namespace std;
 using namespace TalentForge;
 
+struct MatchResultComparator
+{
+    bool operator()(const MatchResult& a, const MatchResult& b) const
+    {
+        return a.score > b.score;
+    }
+};
+
 MatchResult Matcher::match(Candidate& candidate, const JobDescription& job)
 {
     MatchResult result;
@@ -20,15 +28,12 @@ vector<MatchResult> Matcher::rankCandidates(const vector<Candidate*>& candidates
 
     for (vector<Candidate*>::const_iterator it = candidates.begin();
          it != candidates.end(); ++it) {
-        if (*it != nullptr) {
+        if (*it != 0) {
             results.push_back(match(**it, job));
         }
     }
 
-    sort(results.begin(), results.end(),
-         [](const MatchResult& a, const MatchResult& b) {
-             return a.score > b.score;
-         });
+    sort(results.begin(), results.end(), MatchResultComparator());
 
     return results;
 }

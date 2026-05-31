@@ -1,0 +1,6 @@
+CandidateID: C012
+Name: Vikram Mehta
+Experience: 6 years
+Skills: AWS, Terraform, CI/CD
+Education: B.Tech in Computer Science
+Summary: Experienced in software development and technical recruitment support.

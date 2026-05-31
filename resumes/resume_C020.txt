@@ -1,0 +1,6 @@
+CandidateID: C020
+Name: Isha Rao
+Experience: 3 years
+Skills: Python, Django, REST
+Education: B.Tech in Computer Science
+Summary: Experienced in software development and technical recruitment support.

@@ -1,0 +1,6 @@
+CandidateID: C002
+Name: Priya Sharma
+Experience: 3 years
+Skills: JavaScript, React, Node.js
+Education: B.Tech in Computer Science
+Summary: Experienced in software development and technical recruitment support.

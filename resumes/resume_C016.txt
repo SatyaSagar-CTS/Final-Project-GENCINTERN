@@ -1,0 +1,6 @@
+CandidateID: C016
+Name: Arun Nandakumar
+Experience: 7 years
+Skills: AWS, Docker, Python
+Education: B.Tech in Computer Science
+Summary: Experienced in software development and technical recruitment support.
