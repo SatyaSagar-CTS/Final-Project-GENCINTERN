@@ -64,6 +64,11 @@ int JobDescription::getTotalWeight() const
     return total;
 }
 
+const map<string, int>& JobDescription::getRequiredSkills() const
+{
+    return requiredSkills;
+}
+
 void JobDescription::getMissingSkills(const set<string>& candidateSkills,
                                       set<string>& missingSkills) const
 {

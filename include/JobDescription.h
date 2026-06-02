@@ -30,6 +30,7 @@ public:
     bool hasSkill(const string& skill) const;
     int getSkillWeight(const string& skill) const;
     int getTotalWeight() const;
+    const map<string, int>& getRequiredSkills() const;
 
     void getMissingSkills(const set<string>& candidateSkills,
                           set<string>& missingSkills) const;
