@@ -5,6 +5,7 @@
 #include <iostream>
 #include <map>
 #include <set>
+#include <sstream>
 #include <string>
 #include <vector>
 #include <cstdlib>
@@ -16,6 +17,99 @@
 using namespace std;
 using namespace TalentForge;
 
+const char* COLOR_RESET = "\033[0m";
+const char* COLOR_TITLE = "\033[1;36m"; // bright cyan
+const char* COLOR_OPTION = "\033[1;33m"; // bright yellow
+const char* COLOR_INPUT = "\033[1;32m"; // bright green
+const char* COLOR_INFO = "\033[1;35m"; // bright magenta
+const char* COLOR_ERROR = "\033[1;31m"; // bright red
+const char* COLOR_BORDER = "\033[1;34m"; // bright blue
+
+string colorText(const char* color, const string& text){
+    return string(color) + text + COLOR_RESET;
+}
+
+string padRight(const string& text, int width){
+    if (static_cast<int>(text.size()) >= width) {
+        return text.substr(0, width);
+    }
+    return text + string(width - static_cast<int>(text.size()), ' ');
+}
+
+void clearScreen(){
+#ifdef _WIN32
+    system("cls");
+#else
+    system("clear");
+#endif
+}
+
+void waitForEnter(){
+    cout << colorText(COLOR_INPUT, "Press Enter to continue...");
+    string input;
+    getline(cin, input);
+}
+
+bool isNumber(const string& text){
+    if (text.empty()) {
+        return false;
+    }
+    for (size_t i = 0; i < text.size(); ++i) {
+        if (!isdigit(text[i]) && text[i] != '+' && text[i] != '-') {
+            return false;
+        }
+    }
+    return true;
+}
+
+void printBorder(int width = 70, char fill = '='){
+    string border(width, fill);
+    cout << colorText(COLOR_BORDER, border) << "\n";
+}
+
+void printBoxLine(const string& text, const char* color, int width = 70){
+    string content = padRight(text, width - 4);
+    cout << colorText(COLOR_BORDER, "| ")
+         << colorText(color, content)
+         << colorText(COLOR_BORDER, " |") << "\n";
+}
+
+void printHeadingBox(const string& heading){
+    printBorder();
+    printBoxLine(heading, COLOR_TITLE);
+    printBoxLine("", COLOR_TITLE);
+    printBorder();
+}
+
+void printOptionsBox(const vector<string>& options){
+    printBorder();
+    for (size_t i = 0; i < options.size(); ++i) {
+        printBoxLine(options[i], COLOR_OPTION);
+        if (i + 1 < options.size()) {
+            printBoxLine("", COLOR_OPTION);
+        }
+    }
+    printBorder();
+}
+
+void printDataBox(const vector<string>& items){
+    printBorder();
+    for (size_t i = 0; i < items.size(); ++i) {
+        printBoxLine(items[i], COLOR_INFO);
+        if (i + 1 < items.size()) {
+            printBoxLine("", COLOR_INFO);
+        }
+    }
+    printBorder();
+}
+
+void printInputBox(const string& prompt){
+    printBorder(70, '-');
+    printBoxLine(prompt, COLOR_INPUT);
+    printBoxLine("", COLOR_INPUT);
+    printBorder(70, '-');
+}
+
 string trim(const string& text){
     size_t start = 0;
     while (start < text.size() && isspace(text[start])) {
@@ -26,6 +120,16 @@ string trim(const string& text){
         --end;
     }
     return text.substr(start, end - start);
+}
+
+string promptInput(const string& prompt){
+    printInputBox(prompt);
+    cout << colorText(COLOR_INPUT, "> ");
+    string input;
+    if (!getline(cin, input)) {
+        return string();
+    }
+    return trim(input);
 }
 
 vector<string> splitCSV(const string& text){
@@ -225,29 +329,57 @@ void loadJobsFromCSV(ScreeningManager& manager, const string& path){
 }
 
 int getChoice(int minValue, int maxValue){
-    string input;
     while (true) {
-        cout << "Enter choice (" << minValue << "-" << maxValue << "): ";
-        if (!getline(cin, input)) {
+        ostringstream prompt;
+        prompt << "Enter choice (" << minValue << "-" << maxValue << ")";
+        string input = promptInput(prompt.str());
+        if (input.empty()) {
             return -1;
         }
-        int value = atoi(trim(input).c_str());
-        if (value >= minValue && value <= maxValue) {
+        int value = atoi(input.c_str());
+        if (value >= minValue && value <= maxValue && isNumber(input)) {
             return value;
         }
-        cout << "Invalid choice.\n";
+        cout << colorText(COLOR_ERROR, "Invalid input.\n");
+        waitForEnter();
+        clearScreen();
+    }
+}
+
+int getChoiceWithCancel(int minValue, int maxValue){
+    while (true) {
+        ostringstream prompt;
+        prompt << "Enter choice (" << minValue << "-" << maxValue << ", x to go back)";
+        string input = promptInput(prompt.str());
+        if (input.empty()) {
+            return -1;
+        }
+        if (input == "x" || input == "X") {
+            return -1;
+        }
+        int value = atoi(input.c_str());
+        if (value >= minValue && value <= maxValue && isNumber(input)) {
+            return value;
+        }
+        cout << colorText(COLOR_ERROR, "Invalid input.\n");
+        waitForEnter();
+        clearScreen();
     }
 }
 
 void displayJobs(const ScreeningManager& manager){
     const vector<JobDescription>& jobs = manager.getJobs();
     if (jobs.empty()) {
-        cout << "No job descriptions loaded.\n";
+        cout << colorText(COLOR_ERROR, "No job descriptions loaded.\n");
         return;
     }
+    vector<string> items;
     for (size_t i = 0; i < jobs.size(); ++i) {
-        cout << i + 1 << ". " << jobs[i].getID() << " - " << jobs[i].getTitle() << "\n";
+        ostringstream line;
+        line << i + 1 << ". " << jobs[i].getID() << " - " << jobs[i].getTitle();
+        items.push_back(line.str());
     }
+    printDataBox(items);
 }
 
 void saveScreeningResults(const vector<MatchResult>& results, const string& jobID){
@@ -294,7 +426,7 @@ void appendShortlistLog(const vector<MatchResult>& results, const string& jobID)
         return;
     }
     output << "[" << nowTimestamp() << "] Shortlist for " << jobID << ": ";
-    for (size_t i = 0; i < results.size() && i < 5; ++i) {
+    for (size_t i = 0; i < results.size(); ++i) {
         if (i > 0) {
             output << ", ";
         }
@@ -303,14 +435,260 @@ void appendShortlistLog(const vector<MatchResult>& results, const string& jobID)
     output << "\n";
 }
 
-void ingestResumes(ScreeningManager& manager){
-    DIR* dir = opendir("resumes");
-    if (dir == 0) {
-        cout << "Unable to open resumes directory.\n";
+void displayJobDetails(const ScreeningManager& manager){
+    const vector<JobDescription>& jobs = manager.getJobs();
+    if (jobs.empty()) {
+        cout << colorText(COLOR_ERROR, "No job descriptions loaded.\n");
         return;
     }
+    vector<string> jobLines;
+    for (size_t i = 0; i < jobs.size(); ++i) {
+        ostringstream line;
+        line << i + 1 << ". " << jobs[i].getID() << " - " << jobs[i].getTitle();
+        jobLines.push_back(line.str());
+    }
+    printDataBox(jobLines);
+    int choice = getChoice(1, static_cast<int>(jobs.size()));
+    if (choice < 1) {
+        return;
+    }
+    const JobDescription& job = jobs[choice - 1];
+    vector<string> details;
+    details.push_back(string("Job ID: ") + job.getID());
+    details.push_back(string("Title: ") + job.getTitle());
+    details.push_back("Required Skills:");
+    const map<string, int>& skills = job.getRequiredSkills();
+    for (map<string, int>::const_iterator it = skills.begin(); it != skills.end(); ++it) {
+        ostringstream weightStream;
+        weightStream << it->second;
+        details.push_back(string("  - ") + it->first + ": " + weightStream.str());
+    }
+    printDataBox(details);
+}
+
+void addJobDescription(ScreeningManager& manager);
+void viewShortlists();
+
+void jobDescriptionManagement(ScreeningManager& manager){
+    while (true) {
+        clearScreen();
+        printHeadingBox("Job Description Management");
+        vector<string> menuLines;
+        menuLines.push_back("1. View job details");
+        menuLines.push_back("2. Add job description");
+        menuLines.push_back("3. Back");
+        printOptionsBox(menuLines);
+        int choice = getChoice(1, 3);
+        if (choice == 1) {
+            clearScreen();
+            printHeadingBox("View Job Details");
+            displayJobDetails(manager);
+            waitForEnter();
+        } else if (choice == 2) {
+            clearScreen();
+            printHeadingBox("Add Job Description");
+            addJobDescription(manager);
+            waitForEnter();
+        } else {
+            break;
+        }
+    }
+}
+
+void displayMatchResults(const vector<MatchResult>& results){
+    vector<string> items;
+    for (size_t i = 0; i < results.size(); ++i) {
+        ostringstream line;
+        line << i + 1 << ". " << results[i].candidate->getID()
+             << " - " << results[i].candidate->getName()
+             << " | Score: " << results[i].score;
+        items.push_back(line.str());
+    }
+    if (!items.empty()) {
+        printDataBox(items);
+    }
+}
+
+vector<MatchResult> shortlistByThreshold(const vector<MatchResult>& results,
+                                       double threshold){
+    vector<MatchResult> filtered;
+    for (size_t i = 0; i < results.size(); ++i) {
+        if (results[i].score >= threshold) {
+            filtered.push_back(results[i]);
+        }
+    }
+    return filtered;
+}
+
+vector<MatchResult> shortlistTopX(const vector<MatchResult>& results,
+                                 int topX){
+    vector<MatchResult> filtered;
+    for (int i = 0; i < topX && i < static_cast<int>(results.size()); ++i) {
+        filtered.push_back(results[i]);
+    }
+    return filtered;
+}
+
+void displayScreeningResultsForJob(const string& jobID){
+    ifstream file("screening_results.csv");
+    if (!file.is_open()) {
+        cout << colorText(COLOR_ERROR, "No screening results found.\n");
+        return;
+    }
+    string line;
+    if (!getline(file, line)) {
+        cout << colorText(COLOR_ERROR, "No screening results found.\n");
+        return;
+    }
+    vector<string> items;
+    while (getline(file, line)) {
+        line = trim(line);
+        if (line.empty()) {
+            continue;
+        }
+        vector<string> tokens = splitCSV(line);
+        if (tokens.size() < 5) {
+            continue;
+        }
+        if (tokens[2] == jobID) {
+            ostringstream resultLine;
+            resultLine << "Candidate " << tokens[1]
+                       << " | Score: " << tokens[3]
+                       << " | Rank: " << tokens[4];
+            items.push_back(resultLine.str());
+        }
+    }
+    if (items.empty()) {
+        cout << colorText(COLOR_ERROR, string("No shortlisted candidates found for job ") + jobID + ".\n");
+    } else {
+        printHeadingBox(string("Shortlisted candidates for ") + jobID);
+        printDataBox(items);
+    }
+}
+
+bool removeCandidateFromScreeningResults(const string& jobID,
+                                         const string& candidateID){
+    const string path = "screening_results.csv";
+    ifstream in(path.c_str());
+    if (!in.is_open()) {
+        return false;
+    }
+    string header;
+    vector<string> keptLines;
+    bool found = false;
+    if (getline(in, header)) {
+        keptLines.push_back(header);
+    }
+    string line;
+    while (getline(in, line)) {
+        string trimmed = trim(line);
+        if (trimmed.empty()) {
+            continue;
+        }
+        vector<string> tokens = splitCSV(trimmed);
+        if (tokens.size() < 5) {
+            keptLines.push_back(trimmed);
+            continue;
+        }
+        if (tokens[2] == jobID && tokens[1] == candidateID) {
+            found = true;
+            continue;
+        }
+        keptLines.push_back(trimmed);
+    }
+    in.close();
+
+    if (!found) {
+        return false;
+    }
+
+    ofstream out(path.c_str());
+    if (!out.is_open()) {
+        return false;
+    }
+    for (size_t i = 0; i < keptLines.size(); ++i) {
+        out << keptLines[i] << "\n";
+    }
+    out.close();
+
+    ofstream logFile("shortlist.log", ios::app);
+    if (logFile.is_open()) {
+        logFile << "[" << nowTimestamp() << "] Removed candidate "
+                << candidateID << " from shortlist for " << jobID << "\n";
+    }
+    return true;
+}
+
+void manageShortlists(const ScreeningManager& manager){
+    clearScreen();
+    const vector<JobDescription>& jobs = manager.getJobs();
+    if (jobs.empty()) {
+        cout << "No jobs available to manage.\n";
+        return;
+    }
+    displayJobs(manager);
+    int choice = getChoiceWithCancel(1, static_cast<int>(jobs.size()));
+    if (choice < 1) {
+        return;
+    }
+    const string jobID = jobs[choice - 1].getID();
+    displayScreeningResultsForJob(jobID);
+    string candidateID = promptInput("Enter candidate ID to remove from shortlist (x to cancel):");
+    if (candidateID.empty() || candidateID == "x" || candidateID == "X") {
+        return;
+    }
+    if (candidateID.empty() || candidateID == "x" || candidateID == "X") {
+        return;
+    }
+    if (removeCandidateFromScreeningResults(jobID, candidateID)) {
+        cout << "Candidate " << candidateID << " removed from shortlist for "
+             << jobID << ".\n";
+    } else {
+        cout << "Candidate " << candidateID << " is not shortlisted for "
+             << jobID << ".\n";
+    }
+}
+
+void viewManageShortlists(const ScreeningManager& manager){
+    while (true) {
+        clearScreen();
+        printHeadingBox("Shortlist View & Manage");
+        vector<string> menuLines;
+        menuLines.push_back("1. View shortlist history");
+        menuLines.push_back("2. Manage shortlist entries");
+        menuLines.push_back("3. Back");
+        printOptionsBox(menuLines);
+        int choice = getChoice(1, 3);
+        if (choice == 1) {
+            clearScreen();
+            printHeadingBox("Shortlist History");
+            viewShortlists();
+            waitForEnter();
+        } else if (choice == 2) {
+            clearScreen();
+            printHeadingBox("Manage Shortlist Entries");
+            manageShortlists(manager);
+            waitForEnter();
+        } else {
+            break;
+        }
+    }
+}
+
+void ingestResumes(ScreeningManager& manager){
+    clearScreen();
+    printHeadingBox("Resume Ingestion & Parsing");
+    DIR* dir = opendir("resumes");
+    if (dir == 0) {
+        vector<string> errorLines;
+        errorLines.push_back("Unable to open resumes directory.");
+        printDataBox(errorLines);
+        return;
+    }
+
     struct dirent* entry;
     bool anyNew = false;
+    vector<string> logLines;
     while ((entry = readdir(dir)) != 0) {
         string filename = entry->d_name;
         if (filename == "." || filename == "..") {
@@ -322,47 +700,48 @@ void ingestResumes(ScreeningManager& manager){
         string path = string("resumes/") + filename;
         Candidate* candidate = parseResumeFile(path);
         if (!candidate) {
-            cout << "Skipped invalid resume: " << filename << "\n";
+            logLines.push_back(string("Skipped invalid resume: ") + filename);
             continue;
         }
         if (candidateExists(manager, candidate->getID())) {
-            cout << "Candidate " << candidate->getID() << " already exists; skipping.\n";
+            logLines.push_back(string("Candidate ") + candidate->getID() + " already exists; skipping.");
             delete candidate;
             continue;
         }
         manager.addCandidate(candidate);
-        cout << "Imported " << candidate->getName() << " from " << filename << "\n";
+        logLines.push_back(string("Imported ") + candidate->getName() + " from " + filename);
         anyNew = true;
     }
     closedir(dir);
+
     if (anyNew) {
         saveCandidatesToCSV(manager, "candidates.csv");
-        cout << "Saved updated candidate list.\n";
+        logLines.push_back("Saved updated candidate list.");
+    } else if (logLines.empty()) {
+        logLines.push_back("No resumes found in ./resumes directory.");
     }
+    printDataBox(logLines);
 }
 
 void addJobDescription(ScreeningManager& manager){
-    string jobID;
-    string title;
-    cout << "Enter job ID: ";
-    if (!getline(cin, jobID) || trim(jobID).empty()) {
-        cout << "Job ID is required.\n";
+    string jobID = promptInput("Enter job ID:");
+    if (jobID.empty()) {
+        cout << colorText(COLOR_ERROR, "Job ID is required.\n");
         return;
     }
-    cout << "Enter job title: ";
-    if (!getline(cin, title) || trim(title).empty()) {
-        cout << "Job title is required.\n";
+    string title = promptInput("Enter job title:");
+    if (title.empty()) {
+        cout << colorText(COLOR_ERROR, "Job title is required.\n");
         return;
     }
     if (jobExists(manager, jobID)) {
-        cout << "Job " << jobID << " already exists.\n";
+        cout << colorText(COLOR_ERROR, string("Job ") + jobID + " already exists.\n");
         return;
     }
     JobDescription job(jobID, title);
     while (true) {
-        string line;
-        cout << "Enter skill and weight (Skill:Weight), blank to finish: ";
-        if (!getline(cin, line)) {
+        string line = promptInput("Enter skill and weight (Skill:Weight), blank to finish:");
+        if (line.empty()) {
             break;
         }
         line = trim(line);
@@ -388,6 +767,7 @@ void addJobDescription(ScreeningManager& manager){
 }
 
 void screenAndRankCandidates(ScreeningManager& manager){
+    clearScreen();
     const vector<JobDescription>& jobs = manager.getJobs();
     if (jobs.empty()) {
         cout << "No jobs available.\n";
@@ -403,17 +783,54 @@ void screenAndRankCandidates(ScreeningManager& manager){
         return;
     }
     const JobDescription& selectedJob = jobs[choice - 1];
-    vector<MatchResult> results = manager.screenJob(selectedJob.getID());
-    if (results.empty()) {
+    vector<MatchResult> allResults = manager.screenJob(selectedJob.getID());
+    if (allResults.empty()) {
         cout << "No matches found for " << selectedJob.getID() << ".\n";
         return;
     }
-    cout << "Shortlist for " << selectedJob.getTitle() << "\n";
-    for (size_t i = 0; i < results.size(); ++i) {
-        cout << i + 1 << ". " << results[i].candidate->getID()
-             << " - " << results[i].candidate->getName()
-             << " | Score: " << results[i].score << "\n";
+
+    vector<string> screenLines;
+    screenLines.push_back("Screen & Rank Candidates");
+    screenLines.push_back("1. Shortlist based on score threshold");
+    screenLines.push_back("2. Shortlist top X candidates");
+    screenLines.push_back("3. Cancel");
+    printOptionsBox(screenLines);
+    int method = getChoice(1, 3);
+    if (method == 3) {
+        return;
     }
+
+    vector<MatchResult> results;
+    if (method == 1) {
+        string input = promptInput("Enter threshold score:");
+        if (input.empty()) {
+            return;
+        }
+        double threshold = atof(input.c_str());
+        results = shortlistByThreshold(allResults, threshold);
+        if (results.empty()) {
+            cout << "No candidates meet the threshold.\n";
+            return;
+        }
+    } else {
+        string input = promptInput("Enter number of top candidates:");
+        if (input.empty()) {
+            return;
+        }
+        int topX = atoi(input.c_str());
+        if (topX <= 0) {
+            cout << "Invalid number.\n";
+            return;
+        }
+        if (topX > static_cast<int>(allResults.size())) {
+            cout << "Candidate number exceed\n";
+            return;
+        }
+        results = shortlistTopX(allResults, topX);
+    }
+
+    cout << "Shortlist for " << selectedJob.getTitle() << "\n";
+    displayMatchResults(results);
     saveScreeningResults(results, selectedJob.getID());
     appendShortlistLog(results, selectedJob.getID());
     cout << "Saved screening results and shortlist.\n";
@@ -422,14 +839,20 @@ void screenAndRankCandidates(ScreeningManager& manager){
 void viewShortlists(){
     ifstream file("shortlist.log");
     if (!file.is_open()) {
-        cout << "No shortlist history.\n";
+        cout << colorText(COLOR_ERROR, "No shortlist history.\n");
         return;
     }
-    cout << "Shortlist history:\n";
+    vector<string> items;
     string line;
     while (getline(file, line)) {
-        cout << line << "\n";
+        items.push_back(line);
     }
+    if (items.empty()) {
+        cout << colorText(COLOR_ERROR, "No shortlist history.\n");
+        return;
+    }
+    printHeadingBox("Shortlist history");
+    printDataBox(items);
 }
 
 struct SkillCountGreater
@@ -549,26 +972,30 @@ int main(){
     loadCandidatesFromCSV(manager, "candidates.csv");
     loadJobsFromCSV(manager, "job_descriptions.csv");
     while (true) {
-        cout << "\n============================================================\n";
-        cout << "1. Resume Ingestion & Parsing\n";
-        cout << "2. Job Description Management\n";
-        cout << "3. Screen & Rank Candidates\n";
-        cout << "4. View & Manage Shortlists\n";
-        cout << "5. Analytics & Reports\n";
-        cout << "6. System Backup & Restore\n";
-        cout << "7. Exit\n";
+        clearScreen();
+        printHeadingBox("TalentForge - Intelligent Resume Screening Platform");
+        vector<string> menuLines;
+        menuLines.push_back("1. Resume Ingestion & Parsing");
+        menuLines.push_back("2. Job Description Management");
+        menuLines.push_back("3. Screen & Rank Candidates");
+        menuLines.push_back("4. View & Manage Shortlists");
+        menuLines.push_back("5. Analytics & Reports");
+        menuLines.push_back("6. System Backup & Restore");
+        menuLines.push_back("7. Exit");
+        printOptionsBox(menuLines);
         int choice = getChoice(1, 7);
         if (choice < 0) {
             break;
         }
         if (choice == 1) {
             ingestResumes(manager);
+            waitForEnter();
         } else if (choice == 2) {
-            addJobDescription(manager);
+            jobDescriptionManagement(manager);
         } else if (choice == 3) {
             screenAndRankCandidates(manager);
         } else if (choice == 4) {
-            viewShortlists();
+            viewManageShortlists(manager);
         } else if (choice == 5) {
             analyticsAndReports(manager);
         } else if (choice == 6) {
