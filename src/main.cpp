@@ -342,7 +342,6 @@ int getChoice(int minValue, int maxValue){
         }
         cout << colorText(COLOR_ERROR, "Invalid input.\n");
         waitForEnter();
-        clearScreen();
     }
 }
 
@@ -363,7 +362,6 @@ int getChoiceWithCancel(int minValue, int maxValue){
         }
         cout << colorText(COLOR_ERROR, "Invalid input.\n");
         waitForEnter();
-        clearScreen();
     }
 }
 
@@ -865,11 +863,10 @@ struct SkillCountGreater
 };
 
 void analyticsAndReports(const ScreeningManager& manager){
+    clearScreen();
+    printHeadingBox("Analytics & Reports");
     const vector<Candidate*>& candidates = manager.getCandidates();
     const vector<JobDescription>& jobs = manager.getJobs();
-    cout << "Analytics & Reports\n";
-    cout << "Candidates loaded: " << candidates.size() << "\n";
-    cout << "Jobs loaded: " << jobs.size() << "\n";
     map<string, int> skillFrequency;
     for (size_t i = 0; i < candidates.size(); ++i) {
         const set<string>& skills = candidates[i]->getSkills();
@@ -877,8 +874,12 @@ void analyticsAndReports(const ScreeningManager& manager){
             skillFrequency[*it] += 1;
         }
     }
+    vector<string> items;
+    items.push_back(string("Candidates loaded: ") + to_string(candidates.size()));
+    items.push_back(string("Jobs loaded: ") + to_string(jobs.size()));
     if (skillFrequency.empty()) {
-        cout << "No skill data.\n";
+        items.push_back("No skill data.");
+        printDataBox(items);
         return;
     }
     vector<pair<string, int> > report;
@@ -887,37 +888,45 @@ void analyticsAndReports(const ScreeningManager& manager){
         report.push_back(*it);
     }
     sort(report.begin(), report.end(), SkillCountGreater());
-    cout << "Top skills:\n";
+    items.push_back("Top skills:");
     size_t limit = report.size() < 5 ? report.size() : 5;
     int total = 0;
     for (size_t i = 0; i < limit; ++i) {
-        cout << report[i].first << ": " << report[i].second << "\n";
+        items.push_back(report[i].first + ": " + to_string(report[i].second));
         total += report[i].second;
     }
     for (size_t i = limit; i < report.size(); ++i) {
         total += report[i].second;
     }
-    cout << "Total skill mentions: " << total << "\n";
+    items.push_back(string("Total skill mentions: ") + to_string(total));
+    printDataBox(items);
 }
 
 void backupSystem(){
-    cout << "1. Create backup\n";
-    cout << "2. Restore backup\n";
-    cout << "3. Cancel\n";
+    clearScreen();
+    printHeadingBox("System Backup & Restore");
+    vector<string> menuLines;
+    menuLines.push_back("1. Create backup");
+    menuLines.push_back("2. Restore backup");
+    menuLines.push_back("3. Cancel");
+    printOptionsBox(menuLines);
     int choice = getChoice(1, 3);
     if (choice != 1 && choice != 2) {
         return;
     }
+    vector<string> items;
     if (choice == 1) {
         ifstream in1("candidates.csv");
         ifstream in2("job_descriptions.csv");
         if (!in1.is_open() || !in2.is_open()) {
-            cout << "Missing data files.\n";
+            items.push_back("Missing data files.");
+            printDataBox(items);
             return;
         }
         ofstream out("backup.dat");
         if (!out.is_open()) {
-            cout << "Unable to write backup.dat\n";
+            items.push_back("Unable to write backup.dat");
+            printDataBox(items);
             return;
         }
         string line;
@@ -929,18 +938,21 @@ void backupSystem(){
         while (getline(in2, line)) {
             out << line << "\n";
         }
-        cout << "Backup saved.\n";
+        items.push_back("Backup saved.");
+        printDataBox(items);
         return;
     }
     ifstream in("backup.dat");
     if (!in.is_open()) {
-        cout << "Backup not found.\n";
+        items.push_back("Backup not found.");
+        printDataBox(items);
         return;
     }
     ofstream out1("candidates.csv");
     ofstream out2("job_descriptions.csv");
     if (!out1.is_open() || !out2.is_open()) {
-        cout << "Unable to restore files.\n";
+        items.push_back("Unable to restore files.");
+        printDataBox(items);
         return;
     }
     string line;
@@ -963,7 +975,8 @@ void backupSystem(){
             out2 << line << "\n";
         }
     }
-    cout << "Data restored. Restart to reload.\n";
+    items.push_back("Data restored. Restart to reload.");
+    printDataBox(items);
 }
 
 int main(){
@@ -998,8 +1011,10 @@ int main(){
             viewManageShortlists(manager);
         } else if (choice == 5) {
             analyticsAndReports(manager);
+            waitForEnter();
         } else if (choice == 6) {
             backupSystem();
+            waitForEnter();
         } else if (choice == 7) {
             cout << "Exiting TalentForge.\n";
             break;
