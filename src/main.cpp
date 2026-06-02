@@ -875,8 +875,12 @@ void analyticsAndReports(const ScreeningManager& manager){
         }
     }
     vector<string> items;
-    items.push_back(string("Candidates loaded: ") + to_string(candidates.size()));
-    items.push_back(string("Jobs loaded: ") + to_string(jobs.size()));
+    ostringstream cand_str;
+    cand_str << candidates.size();
+    ostringstream jobs_str;
+    jobs_str << jobs.size();
+    items.push_back(string("Candidates loaded: ") + cand_str.str());
+    items.push_back(string("Jobs loaded: ") + jobs_str.str());
     if (skillFrequency.empty()) {
         items.push_back("No skill data.");
         printDataBox(items);
@@ -892,13 +896,17 @@ void analyticsAndReports(const ScreeningManager& manager){
     size_t limit = report.size() < 5 ? report.size() : 5;
     int total = 0;
     for (size_t i = 0; i < limit; ++i) {
-        items.push_back(report[i].first + ": " + to_string(report[i].second));
+        ostringstream skill_line;
+        skill_line << report[i].first << ": " << report[i].second;
+        items.push_back(skill_line.str());
         total += report[i].second;
     }
     for (size_t i = limit; i < report.size(); ++i) {
         total += report[i].second;
     }
-    items.push_back(string("Total skill mentions: ") + to_string(total));
+    ostringstream total_str;
+    total_str << total;
+    items.push_back(string("Total skill mentions: ") + total_str.str());
     printDataBox(items);
 }
 
